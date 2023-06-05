@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\ApiHelper as Response;
+use App\Services\ServiceAbsensi as Service;
+use App\Services\Signature;
+use Illuminate\Support\Facades\File;
+
+class AbsensiController extends Controller
+{
+    public function absen(Request $request)
+    {
+        return Response::responseData(Service::absensi($request));
+    }
+}
