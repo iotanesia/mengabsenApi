@@ -7,13 +7,14 @@ use Firebase\JWT\Key;
 use Firebase\JWT\ExpiredException;
 use App\Constants\ErrorCode as EC;
 use App\Constants\ErrorMessage as EM;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 class ApiHelper {
-
-     static function storageCache($key, $callback, $ttl = null )
+    public const ABSENSI_PATH = "public/images/absensi";
+    static function storageCache($key, $callback, $ttl = null )
     {
         if (Cache::has($key)) {
             return Cache::get($key);
@@ -336,5 +337,22 @@ class ApiHelper {
 
         return $ip;
     }
+    public static function uploadImage(UploadedFile $image, string $path = 'public/images/etc')
+    {
+        $filenameWithExt = $image->getClientOriginalName();
 
+        // Get Filename
+        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+
+        // Get just Extension
+        $extension = $image->getClientOriginalExtension();
+
+        // Filename To store
+        $fileNameToStore = Str::uuid().'.'.$extension;
+
+        // Upload
+        $path = $image->storeAs($path, $fileNameToStore);
+
+        return $path;
+    }
 }

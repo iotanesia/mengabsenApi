@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Absen extends Model
@@ -18,6 +19,7 @@ class Absen extends Model
         'address',
         'long',
         'lat',
+        'image',
         'type',
         'location_id',
         'check_in',
@@ -42,5 +44,13 @@ class Absen extends Model
     public function refUser()
     {
         return $this->belongsTo(User::class,'id','user_id');
+    }
+    public function getImageAttribute()
+    {
+        if (is_null($this->attributes['image'])
+            || str_starts_with($this->attributes['image'], 'http')) {
+            return $this->attributes['image'];
+        }
+        return url(Storage::url($this->attributes['image']));
     }
 }

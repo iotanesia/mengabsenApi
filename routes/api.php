@@ -22,6 +22,7 @@ Route::prefix('v1')
     Route::post('login',[AuthControler::class,'login']);
     Route::post('regis',[AuthControler::class,'regis']);
     Route::middleware('apiAuth')->group(function () {
+        Route::get('absen',[AbsensiController::class,'listAbsen']); 
         Route::post('absen',[AbsensiController::class,'absen']); 
     });
 });

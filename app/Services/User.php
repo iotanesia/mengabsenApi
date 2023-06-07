@@ -13,10 +13,10 @@ class User {
     public static function authenticateuser($params)
     {
         $required_params = [];
-        if (!$params->username) $required_params[] = 'username';
+        if (!$params->email) $required_params[] = 'email';
         if (!$params->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
-        $user = Model::where('username',$params->username)->first();
+        $user = Model::where('email',$params->email)->first();
         if(!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);

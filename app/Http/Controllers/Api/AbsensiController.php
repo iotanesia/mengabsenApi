@@ -13,6 +13,10 @@ class AbsensiController extends Controller
 {
     public function absen(Request $request)
     {
-        return Response::responseData(Service::absensi($request));
+        return Response::responseData(['items' => Service::absensi($request)]);
+    }
+    public function listAbsen(Request $request)
+    {
+        return Response::responseData(['items' => Service::getList($request)]);
     }
 }
