@@ -21,9 +21,16 @@ class Absen extends Model
         'lat',
         'image',
         'type',
+        'desc',
         'location_id',
         'check_in',
-        'check_out'
+        'check_out',
+        'address_out',
+        'long_out',
+        'lat_out',
+        'image_out',
+        'desc_out',
+        'location_id_out',
     ];
     protected static function boot() {
         parent::boot();

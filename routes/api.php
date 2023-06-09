@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AbsensiController;
 use App\Http\Controllers\Api\AuthControler;
 use App\Http\Controllers\Api\Bri\BriController;
+use App\Http\Controllers\Api\LocationControler;
 use App\Http\Controllers\Api\Mandiri\MandiriController;
 use App\Http\Controllers\Api\RSAController;
 use App\Http\Controllers\Api\UserControler;
@@ -22,6 +23,10 @@ Route::prefix('v1')
     Route::post('login',[AuthControler::class,'login']);
     Route::post('regis',[AuthControler::class,'regis']);
     Route::middleware('apiAuth')->group(function () {
+        Route::get('master/location',[LocationControler::class,'getAll']);
+        Route::post('master/location',[LocationControler::class,'save']);
+        Route::post('master/location/{id}',[LocationControler::class,'update']);
+        Route::delete('master/location/{id}',[LocationControler::class,'delete']);
         Route::get('absen',[AbsensiController::class,'listAbsen']); 
         Route::post('absen',[AbsensiController::class,'absen']); 
     });

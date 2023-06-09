@@ -16,11 +16,19 @@ class ServiceAbsensi {
             $img = $request->file ? Helper::uploadImage($request->file,Helper::ABSENSI_PATH) : null;
             $data['user_id'] = $request->current_user->id;
             $data['image'] = $img;
-            $absen ? $data['check_out'] = Carbon::now() : $data['check_in'] = Carbon::now();
             if($absen) {
+                $data['check_out'] = Carbon::now();
+                $data['long_out'] = $data['long'];
+                $data['lat_out'] = $data['lat'];
+                $data['address_out'] = $data['address'];
+                $data['desc_out'] = $data['desc'];
+                $data['location_id_out'] = $data['location_id'];
+                $data['image_out'] = $data['image'];
+                unset($data['long'],$data['lat'],$data['address'],$data['desc'],$data['location_id'],$data['image']);
                 $absen->fill($data);
                 $absen->save();
             } else {
+                $data['check_in'] = Carbon::now();
                 $absen = Model::create($data);
             }
             DB::commit();
