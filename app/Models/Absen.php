@@ -52,6 +52,10 @@ class Absen extends Model
     {
         return $this->belongsTo(User::class,'id','user_id');
     }
+    public function refLocation()
+    {
+        return $this->belongsTo(Location::class,'location_id','id');
+    }
     public function getImageAttribute()
     {
         if (is_null($this->attributes['image'])
