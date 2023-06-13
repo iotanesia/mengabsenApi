@@ -18,4 +18,7 @@ class AuthControler extends Controller
     public function regis(Request $request) {
         return Response::responseData(['items' => Service::saveData($request)]);
     }
+    public function version(Request $request) {
+        return Response::responseData(['items' => Service::version($request)]);
+    }
 }

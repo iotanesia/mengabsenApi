@@ -12,7 +12,7 @@ class LocationControler extends Controller
 {
     public function getAll(Request $request)
     {
-        return Response::responseData(['items' => Location::all()]);
+        return Response::responseData(['items' => Location::where('user_id',$request->current_user->id)->orWhere('type','OFFICE')->get()]);
     }
     public function save(Request $request)
     {

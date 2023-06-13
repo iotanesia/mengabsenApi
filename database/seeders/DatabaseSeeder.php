@@ -14,5 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(kantorPusatLocation::class);
+        $this->call(typeLocation::class);
+        $this->call(version::class);
     }
 }

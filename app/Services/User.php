@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Group;
+use App\Models\GlobalParam;
 
 class User {
 
@@ -114,5 +115,9 @@ public static function saveData($params)
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function version() {
+        return GlobalParam::where('param_type','Version')->get();
     }
 }
