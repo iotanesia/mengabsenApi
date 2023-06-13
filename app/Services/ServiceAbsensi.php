@@ -55,10 +55,10 @@ class ServiceAbsensi {
                      ->whereDate('created_at',Carbon::now()->subDay(1))
                      ->first();
         return [
-            'attend_time_hari_ini' => isset($now->check_in) ? Carbon::parse($now->check_in)->format('d m Y, H:i:s') : null,
-            'leave_time_hari_ini' => isset($now->check_out) ? Carbon::parse($now->check_out)->format('d m Y, H:i:s')  : null,
-            'attend_time_hari_kemarin' => isset($yesterday->check_in) ? Carbon::parse($yesterday->check_in)->format('d m Y, H:i:s')  : null,
-            'leave_time_hari_kemarin' => isset($yesterday->check_out) ? Carbon::parse($yesterday->check_out)->format('d m Y, H:i:s')  : null,
+            'attend_time_hari_ini' => isset($now->check_in) ? Carbon::parse($now->check_in)->format('Ymd H:i:s') : null,
+            'leave_time_hari_ini' => isset($now->check_out) ? Carbon::parse($now->check_out)->format('Ymd H:i:s')  : null,
+            'attend_time_hari_kemarin' => isset($yesterday->check_in) ? Carbon::parse($yesterday->check_in)->format('Ymd H:i:s')  : null,
+            'leave_time_hari_kemarin' => isset($yesterday->check_out) ? Carbon::parse($yesterday->check_out)->format('Ymd H:i:s')  : null,
         ];
     }
 }
