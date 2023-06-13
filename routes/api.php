@@ -23,6 +23,7 @@ Route::prefix('v1')
     Route::post('login',[AuthControler::class,'login']);
     Route::post('regis',[AuthControler::class,'regis']);
     Route::middleware('apiAuth')->group(function () {
+        Route::get('get-attend-now',[AbsensiController::class,'attendNow']);
         Route::get('master/location',[LocationControler::class,'getAll']);
         Route::post('master/location',[LocationControler::class,'save']);
         Route::post('master/location/{id}',[LocationControler::class,'update']);

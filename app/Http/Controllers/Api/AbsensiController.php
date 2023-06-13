@@ -19,4 +19,8 @@ class AbsensiController extends Controller
     {
         return Response::responseData(['items' => Service::getList($request)]);
     }
+    public function attendNow(Request $request)
+    {
+        return Response::responseData(['items' => Service::getData($request)]);
+    }
 }
