@@ -42,7 +42,7 @@ class ServiceAbsensi {
     public static function getList($request) {
         $data = Model::where('user_id',$request->current_user->id)->get();
         return $data->transform(function($item){
-            $item->location_name = $item->refLocation->name;
+            $item->location_name = $item->refLocation->name ?? null;
             unset($item->refLocation);
             return $item;
         });
