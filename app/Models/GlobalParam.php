@@ -16,4 +16,7 @@ class GlobalParam extends Model
         'param_name',
         'desc'
     ];
+    public static function getJamMasuk() {
+        return GlobalParam::select('param_code','param_name')->where('param_type','ABSENSI')->where('param_code','JAM_MASUK')->first();
+    }
 }

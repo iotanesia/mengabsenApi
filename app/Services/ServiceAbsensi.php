@@ -3,6 +3,7 @@
 namespace App\Services;
 use App\Models\Absen as Model;
 use App\ApiHelper as Helper;
+use App\Models\GlobalParam;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -42,7 +43,12 @@ class ServiceAbsensi {
     public static function getList($request) {
         $data = Model::where('user_id',$request->current_user->id)->get();
         return $data->transform(function($item){
+            $attendTime = $item->check_in ? Carbon::parse($item->check_in) : null;
+            $leaveTime = $item->check_out ? Carbon::parse($item->check_out) : null;
             $item->location_name = $item->refLocation->name ?? null;
+            $item->is_expired = Carbon::now()->format('Y-m-d') != Carbon::parse($item->check_in)->format('Y-m-d') && !$item->check_out ? true : false;
+            $item->diff_time = $attendTime && $leaveTime ? $attendTime->diff($leaveTime)->format('%H Jam') : '-';
+            $item->is_late = Carbon::parse($item->check_in)->format('H:i:s') > GlobalParam::getJamMasuk()->param_name ? true : false;
             unset($item->refLocation);
             return $item;
         });

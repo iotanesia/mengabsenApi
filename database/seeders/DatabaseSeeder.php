@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
         $this->call(kantorPusatLocation::class);
         $this->call(typeLocation::class);
         $this->call(version::class);
+        $this->call(gpJamMasuk::class);
     }
 }
