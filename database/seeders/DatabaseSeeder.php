@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(typeLocation::class);
         $this->call(version::class);
         $this->call(gpJamMasuk::class);
+        $this->call(dummyBanner::class);
     }
 }

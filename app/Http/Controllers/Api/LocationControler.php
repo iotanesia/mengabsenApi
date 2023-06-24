@@ -26,4 +26,8 @@ class LocationControler extends Controller
     {
         return Response::responseData(Service::delete($id));
     }
+    public function getBannerDashboard(Request $request)
+    {
+        return Response::responseData(Service::bannerDashboard());
+    }
 }

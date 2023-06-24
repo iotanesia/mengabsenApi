@@ -26,11 +26,13 @@ Route::prefix('v1')
     Route::middleware('apiAuth')->group(function () {
         Route::get('get-attend-now',[AbsensiController::class,'attendNow']);
         Route::get('master/location',[LocationControler::class,'getAll']);
+        Route::get('banner/dashboard',[LocationControler::class,'getBannerDashboard']);
         Route::post('master/location',[LocationControler::class,'save']);
         Route::post('master/location/{id}',[LocationControler::class,'update']);
         Route::delete('master/location/{id}',[LocationControler::class,'delete']);
-        Route::get('absen',[AbsensiController::class,'listAbsen']); 
+        Route::get('absen',[AbsensiController::class,'listAbsen']);
         Route::post('absen',[AbsensiController::class,'absen']); 
+        Route::get('user/profile',[AuthControler::class,'profile']);
     });
 });
 

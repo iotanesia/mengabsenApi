@@ -120,4 +120,7 @@ public static function saveData($params)
     public static function version() {
         return GlobalParam::where('param_type','Version')->get();
     }
+    public static function profile($params) {
+        return Model::find($params->current_user->id);
+    }
 }

@@ -21,4 +21,7 @@ class AuthControler extends Controller
     public function version(Request $request) {
         return Response::responseData(['items' => Service::version($request)]);
     }
+    public function profile(Request $request) {
+        return Response::responseData(['items' => Service::profile($request)]);
+    }
 }

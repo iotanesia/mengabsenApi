@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Services;
+
+use App\Models\BannerDashboard;
 use App\Models\Location AS Model;
 use Illuminate\Support\Facades\DB;
 
@@ -43,5 +45,8 @@ class Location {
             DB::rollBack();
             throw $th;
         }
+    }
+    public static function bannerDashboard() {
+        return ['items'=>BannerDashboard::get()];
     }
 }
