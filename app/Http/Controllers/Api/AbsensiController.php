@@ -25,6 +25,6 @@ class AbsensiController extends Controller
     }
     public function ddLeave(Request $request)
     {
-        return Response::responseData(['items' => ['Izin','Sakit','Cuti']]);
+        return Response::responseData(['items' => [['value'=>'Izin','label'=>'Izin'],['value'=>'Sakit','label'=>'Sakit'],['value'=>'Cuti','label'=>'Cuti']]]);
     }
 }
