@@ -16,6 +16,7 @@ class Location extends Model
         'address',
         'long',
         'lat',
+        'type',
         'name'
     ];
 }
