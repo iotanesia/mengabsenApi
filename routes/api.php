@@ -25,6 +25,7 @@ Route::prefix('v1')
     Route::get('version',[AuthControler::class,'version']);
     Route::middleware('apiAuth')->group(function () {
         Route::get('get-attend-now',[AbsensiController::class,'attendNow']);
+        Route::get('dropdown-leave',[AbsensiController::class,'ddLeave']);
         Route::get('master/location',[LocationControler::class,'getAll']);
         Route::get('banner/dashboard',[LocationControler::class,'getBannerDashboard']);
         Route::post('master/location',[LocationControler::class,'save']);
