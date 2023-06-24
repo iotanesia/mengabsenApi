@@ -31,8 +31,9 @@ Route::prefix('v1')
         Route::post('master/location/{id}',[LocationControler::class,'update']);
         Route::delete('master/location/{id}',[LocationControler::class,'delete']);
         Route::get('absen',[AbsensiController::class,'listAbsen']);
-        Route::post('absen',[AbsensiController::class,'absen']); 
+        Route::post('absen',[AbsensiController::class,'absen']);
         Route::get('user/profile',[AuthControler::class,'profile']);
+        Route::post('user/profile',[AuthControler::class,'updateProfile']);
     });
 });
 

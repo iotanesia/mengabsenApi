@@ -24,4 +24,7 @@ class AuthControler extends Controller
     public function profile(Request $request) {
         return Response::responseData(['items' => Service::profile($request)]);
     }
+    public function updateProfile(Request $request) {
+        return Response::responseData(['items' => Service::updateProfile($request)]);
+    }
 }

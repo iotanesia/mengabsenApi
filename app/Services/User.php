@@ -123,4 +123,16 @@ public static function saveData($params)
     public static function profile($params) {
         return Model::find($params->current_user->id);
     }
+    public static function updateProfile($params) {
+        DB::beginTransaction();
+        try {
+            $user = Model::find($params->current_user->id);
+            $user->fill($params->all());
+            $user->save();
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }
