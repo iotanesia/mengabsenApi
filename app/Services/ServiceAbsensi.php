@@ -69,4 +69,39 @@ class ServiceAbsensi {
             'is_late_hari_kemarin' => isset($yesterday->check_in) ? (Carbon::parse($yesterday->check_in)->format('H:i:s') > GlobalParam::getJamMasuk()->param_name ? true : false) : null,
         ];
     }
+
+    public static function generateRekapAbsen($request) {
+        try {
+            $dataAbsen = Model::select('user.username as name', 'absen.check_in', 'absen.check_out', 'absen.type',
+             'absen.desc as desc_in', 'absen.desc_out', 'absen.address as addess_in', 'absen.address_out')
+            ->leftJoin('auth.users as user','user.id','absen.user_id')->where(function ($query) use ($request){
+                if($request->startDate && $request->endDate){
+                    $startDateParam = Carbon::parse($request->startDate.' 00:00:00')->format('Y-m-d H:i:s');
+                    $endDateParam = Carbon::parse($request->endDate.' 23:59:59')->format('Y-m-d H:i:s');
+                    $query->where('absen.check_in', '>=', $startDateParam)
+                    ->where('absen.check_out', '<=', $endDateParam);
+                }
+                if($request->name){
+                    $query->where('user.username','ilike', "%" . $request->name . "%");
+                }
+            })->orderBy('absen.created_at', 'desc')->get();
+            foreach($dataAbsen as $item){
+                $attendTime = $item->check_in ? Carbon::parse($item->check_in) : null;
+                $leaveTime = $item->check_out ? Carbon::parse($item->check_out) : null;
+                $item->diff_time = $attendTime && $leaveTime ? $attendTime->diff($leaveTime)->format('%H Jam %i Menit %s Detik') : '-';
+                $item->is_late = Carbon::parse($item->check_in)->format('H:i:s') > GlobalParam::getJamMasuk()->param_name ? true : false;
+            }
+            $filename = 'REKAP-ABSEN-'.Carbon::now()->format('Ymd');
+            if($request->startDate && $request->endDate){
+                'REKAP-ABSEN-'.Carbon::parse($request->startDate)->format('dmY').'-'.Carbon::parse($request->endDate)->format('dmY');
+            }
+            $pathToFile =  storage_path().'/absen/rekap/'.$filename.'.xls';
+            $dataSend['data'] = $dataAbsen;
+            $dataSend['filename'] = $filename.'.xls';
+            $dataSend['pathToFile'] = $pathToFile;
+            return $dataSend;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

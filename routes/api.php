@@ -36,5 +36,6 @@ Route::prefix('v1')
         Route::get('user/profile',[AuthControler::class,'profile']);
         Route::post('user/profile',[AuthControler::class,'updateProfile']);
     });
+    Route::get('absen/rekap',[AbsensiController::class,'generateRekapAbsen']);
 });
 

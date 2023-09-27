@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\ApiHelper as Response;
+use App\Exports\RekapExport;
 use App\Services\ServiceAbsensi as Service;
-use App\Services\Signature;
-use Illuminate\Support\Facades\File;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
 {
@@ -27,4 +27,10 @@ class AbsensiController extends Controller
     {
         return Response::responseData(['items' => [['value'=>'Izin','label'=>'Izin'],['value'=>'Sakit','label'=>'Sakit'],['value'=>'Cuti','label'=>'Cuti']]]);
     }
+
+    public function generateRekapAbsen(Request $request){
+        $data = Service::generateRekapAbsen($request);
+        return Excel::download(new RekapExport($data['data'], 'rekap'), $data['filename']);
+    }
+    
 }
