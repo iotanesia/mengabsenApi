@@ -35,8 +35,8 @@ Route::prefix('v1')
         Route::post('absen',[AbsensiController::class,'absen']);
         Route::get('user/profile',[AuthControler::class,'profile']);
         Route::post('user/profile',[AuthControler::class,'updateProfile']);
-        Route::get('history-absen',[AbsensiController::class,'historyAbsen']);
     });
+    Route::get('history-absen',[AbsensiController::class,'historyAbsen']);
     Route::get('absen/rekap',[AbsensiController::class,'generateRekapAbsen']);
 });
 
