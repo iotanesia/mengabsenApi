@@ -24,21 +24,86 @@ $(function () {
     invoiceEdit = assetPath + 'app/invoice/edit';
   }
 
+  // Access the data attribute and get the API URL
+  var apiUrl = document.getElementById('api-url').getAttribute('data-api-url');
+  var download = document.getElementById('api-download').getAttribute('data-api-download');
+
+  var modalHtml = `
+    <div class="modal" id="downloadRekapModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Download Rekap</h5>
+                    <button type="button" style="border:none; color:white; background-color:#ff7063; border-radius:4px;" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true"><b>X</b></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Add your modal content here -->
+                    From
+                    <input class="form-control form-control-merge" id="startDate" type="date" name="startDate" tabindex="2" />
+                    To
+                    <input class="form-control form-control-merge" id="endDate" type="date" name="endDate" tabindex="2" />
+                    <br>
+                    <br>
+                    By Username (optional)
+                    <br>
+                    <input class="form-control form-control-merge" id="name" type="text" name="name" placeholder="Username" tabindex="2" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="downloadButton">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  `;
+
+  // Append the modal HTML to the body
+  $('body').append(modalHtml);
+
   // datatable
   if (dtInvoiceTable.length) {
     var dtInvoice = dtInvoiceTable.DataTable({
-      ajax: assetPath + 'data/invoice-list.json', // JSON file to add data
+      // "processing": true,
+      // "serverSide": true, 
+      // "ajax": {
+      //     "url": apiUrl,
+      //     "type": "GET", 
+      //     "beforeSend": function () {
+      //       // This function will be called before the Ajax request is made. ah anjeng anjeng wkwkw
+      //       // You can show a loading spinner or perform any action here. kudu manual po
+
+      //       $('.dataTables_info').html('Showing 0 to 0 of 0 entries');
+      //     },
+      //     "data": function(d) {
+      //       console.log('data ddddddddd', d);
+      //         // Add any necessary parameters for pagination
+      //         d.page = (d.start / d.length) + 1;
+      //         d.per_page = d.length;
+
+      //         // Set the 'limit' parameter based on the variable
+      //         d.limit = d.length;
+      //         apiFunc(d.length)
+      //         // Add search parameters
+      //         d.search = d.search.value; // Search keyword
+      //         d.search_regex = d.search.regex; // Search regex flag
+      //         return d;
+      //     }
+      // },
+      ajax: apiUrl,
       autoWidth: false,
       columns: [
         // columns according to JSON
-        { data: 'responsive_id' },
-        { data: 'invoice_id' },
-        { data: 'invoice_status' },
-        { data: 'issued_date' },
-        { data: 'client_name' },
-        { data: 'total' },
-        { data: 'balance' },
-        { data: 'invoice_status' },
+        { data: 'no' },
+        { data: 'username' },
+        { data: 'type' },
+        { data: 'check_in' },
+        { data: 'desc' },
+        { data: 'check_out' },
+        { data: 'desc_out' },
+        { data: 'status' },
+        { data: 'lama_bekerja' },
         { data: '' }
       ],
       columnDefs: [
@@ -49,140 +114,18 @@ $(function () {
           targets: 0
         },
         {
-          // Invoice ID
-          targets: 1,
-          width: '46px',
-          render: function (data, type, full, meta) {
-            var $invoiceId = full['invoice_id'];
-            // Creates full output for row
-            var $rowOutput = '<a class="font-weight-bold" href="' + invoicePreview + '"> #' + $invoiceId + '</a>';
-            return $rowOutput;
-          }
-        },
-        {
-          // Invoice status
-          targets: 2,
-          width: '42px',
-          render: function (data, type, full, meta) {
-            var $invoiceStatus = full['invoice_status'],
-              $dueDate = full['due_date'],
-              $balance = full['balance'],
-              roleObj = {
-                Sent: { class: 'bg-light-secondary', icon: 'send' },
-                Paid: { class: 'bg-light-success', icon: 'check-circle' },
-                Draft: { class: 'bg-light-primary', icon: 'save' },
-                Downloaded: { class: 'bg-light-info', icon: 'arrow-down-circle' },
-                'Past Due': { class: 'bg-light-danger', icon: 'info' },
-                'Partial Payment': { class: 'bg-light-warning', icon: 'pie-chart' }
-              };
-            return (
-              "<span data-toggle='tooltip' data-html='true' title='<span>" +
-              $invoiceStatus +
-              '<br> <span class="font-weight-bold">Balance:</span> ' +
-              $balance +
-              '<br> <span class="font-weight-bold">Due Date:</span> ' +
-              $dueDate +
-              "</span>'>" +
-              '<div class="avatar avatar-status ' +
-              roleObj[$invoiceStatus].class +
-              '">' +
-              '<span class="avatar-content">' +
-              feather.icons[roleObj[$invoiceStatus].icon].toSvg({ class: 'avatar-icon' }) +
-              '</span>' +
-              '</div>' +
-              '</span>'
-            );
-          }
-        },
-        {
-          // Client name and Service
-          targets: 3,
-          responsivePriority: 4,
-          width: '270px',
-          render: function (data, type, full, meta) {
-            var $name = full['client_name'],
-              $email = full['email'],
-              $image = full['avatar'],
-              stateNum = Math.floor(Math.random() * 6),
-              states = ['success', 'danger', 'warning', 'info', 'primary', 'secondary'],
-              $state = states[stateNum],
-              $name = full['client_name'],
-              $initials = $name.match(/\b\w/g) || [];
-            $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-            if ($image) {
-              // For Avatar image
-              var $output =
-                '<img  src="' + assetPath + 'images/avatars/' + $image + '" alt="Avatar" width="32" height="32">';
-            } else {
-              // For Avatar badge
-              $output = '<div class="avatar-content">' + $initials + '</div>';
-            }
-            // Creates full output for row
-            var colorClass = $image === '' ? ' bg-light-' + $state + ' ' : ' ';
-
-            var $rowOutput =
-              '<div class="d-flex justify-content-left align-items-center">' +
-              '<div class="avatar-wrapper">' +
-              '<div class="avatar' +
-              colorClass +
-              'mr-50">' +
-              $output +
-              '</div>' +
-              '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<h6 class="user-name text-truncate mb-0">' +
-              $name +
-              '</h6>' +
-              '<small class="text-truncate text-muted">' +
-              $email +
-              '</small>' +
-              '</div>' +
-              '</div>';
-            return $rowOutput;
-          }
-        },
-        {
-          // Total Invoice Amount
-          targets: 4,
-          width: '73px',
-          render: function (data, type, full, meta) {
-            var $total = full['total'];
-            return '<span class="d-none">' + $total + '</span>$' + $total;
-          }
-        },
-        {
-          // Due Date
-          targets: 5,
-          width: '130px',
-          render: function (data, type, full, meta) {
-            var $dueDate = new Date(full['due_date']);
-            // Creates full output for row
-            var $rowOutput =
-              '<span class="d-none">' +
-              moment($dueDate).format('YYYYMMDD') +
-              '</span>' +
-              moment($dueDate).format('DD MMM YYYY');
-            $dueDate;
-            return $rowOutput;
-          }
-        },
-        {
-          // Client Balance/Status
-          targets: 6,
-          width: '98px',
-          render: function (data, type, full, meta) {
-            var $balance = full['balance'];
-            if ($balance === 0) {
-              var $badge_class = 'badge-light-success';
-              return '<span class="badge badge-pill ' + $badge_class + '" text-capitalized> Paid </span>';
-            } else {
-              return '<span class="d-none">' + $balance + '</span>' + $balance;
-            }
-          }
-        },
-        {
+          // Status
           targets: 7,
-          visible: false
+          render: function (data, type, full, meta) {
+            var $status = full['status'];
+            if ($status === 'On Time') {
+              return '<span style="color:#4bd909; font-weight:600;">' + $status + '</span>';
+            } else if ($status === '-') {
+              return $status;
+            } else {
+              return '<span style="color:red; font-weight:600;">' + $status + '</span>';
+            }
+          }
         },
         {
           // Actions
@@ -227,7 +170,6 @@ $(function () {
           }
         }
       ],
-      order: [[1, 'desc']],
       dom:
         '<"row d-flex justify-content-between align-items-center m-1"' +
         '<"col-lg-6 d-flex align-items-center"l<"dt-action-buttons text-xl-right text-lg-left text-lg-right text-left "B>>' +
@@ -240,48 +182,24 @@ $(function () {
       language: {
         sLengthMenu: 'Show _MENU_',
         search: 'Search',
-        searchPlaceholder: 'Search Invoice',
+        searchPlaceholder: 'Search....',
         paginate: {
           // remove previous & next text from pagination
           previous: '&nbsp;',
           next: '&nbsp;'
         }
       },
-      // Buttons with Dropdown
+      // Buttons with Modal
       buttons: [
         {
-          text: 'Add Record',
+          text: 'Download Rekap',
           className: 'btn btn-primary btn-add-record ml-2',
           action: function (e, dt, button, config) {
-            window.location = invoiceAdd;
+            // window.location = invoiceAdd;
+            $('#downloadRekapModal').modal('show');
           }
         }
       ],
-      // For responsive popup
-      responsive: {
-        details: {
-          display: $.fn.dataTable.Responsive.display.modal({
-            header: function (row) {
-              var data = row.data();
-              return 'Details of ' + data['client_name'];
-            }
-          }),
-          type: 'column',
-          renderer: $.fn.dataTable.Responsive.renderer.tableAll({
-            tableClass: 'table',
-            columnDefs: [
-              {
-                targets: 2,
-                visible: false
-              },
-              {
-                targets: 3,
-                visible: false
-              }
-            ]
-          })
-        }
-      },
       initComplete: function () {
         $(document).find('[data-toggle="tooltip"]').tooltip();
         // Adding role filter once table initialized
@@ -307,9 +225,21 @@ $(function () {
               });
           });
       },
-      drawCallback: function () {
+      drawCallback: function (response) {
         $(document).find('[data-toggle="tooltip"]').tooltip();
       }
     });
   }
+  
+  document.getElementById('downloadButton').addEventListener('click', function() {
+      var fromDate = document.getElementById('startDate').value;
+      var toDate = document.getElementById('endDate').value;
+      var name = document.getElementById('name').value;
+  
+      // Assuming you want to pass the date and username as parameters to the download URL
+      var downloadUrl = download + '?startDate=' + fromDate + '&endDate=' + toDate + '&name=' + name;
+  
+      window.open(downloadUrl, '_blank');
+  });
+  
 });

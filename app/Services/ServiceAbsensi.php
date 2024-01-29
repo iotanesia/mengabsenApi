@@ -53,6 +53,36 @@ class ServiceAbsensi {
             return $item;
         });
     }
+    public static function historyAbsen($request) {
+        $data = Model::orderBy('created_at', 'desc')->paginate(100);
+        return [
+            'items' => $data->transform(function ($item, $key) {
+                $attendTime = $item->check_in ? Carbon::parse($item->check_in) : null;
+                $leaveTime = $item->check_out ? Carbon::parse($item->check_out) : null;
+                $now = Carbon::now();
+    
+                $res['no'] = $key + 1;
+                $res['username'] = $item->refUser->username ?? null;
+                $res['type'] = $item->type;
+                $res['check_in'] = $item->check_in;
+                $res['desc'] = $item->desc ?? '-';
+                $res['check_out'] = $item->check_out ?? '-';
+                $res['desc_out'] = $item->desc_out ?? '-';
+                $res['status'] = Carbon::parse($item->check_in)->format('H:i:s') > GlobalParam::getJamMasuk()->param_name ? 'Late' : 'On Time';
+                if ($item->check_out == null) $res['status'] = $attendTime->format('d') == $now->format('d') ? '-' : 'Lupa Absen Pulang';
+                $res['lama_bekerja'] = $attendTime && $leaveTime ? $attendTime->diff($leaveTime)->format('%H Jam %i Menit %s Detik') : '-';
+    
+                return $res;
+            }),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->firstItem(),
+                'per_page' => (int)$data->perPage(),
+                'last_page' => $data->lastPage(),
+            ],
+        ];
+    }    
     public static function getData($request) {
         $now = Model::where('user_id',$request->current_user->id)
                ->whereDate('created_at',Carbon::now())
@@ -78,8 +108,9 @@ class ServiceAbsensi {
                 if($request->startDate && $request->endDate){
                     $startDateParam = Carbon::parse($request->startDate.' 00:00:00')->format('Y-m-d H:i:s');
                     $endDateParam = Carbon::parse($request->endDate.' 23:59:59')->format('Y-m-d H:i:s');
-                    $query->where('absen.check_in', '>=', $startDateParam)
-                    ->where('absen.check_out', '<=', $endDateParam);
+                    // $query->where('absen.check_in', '>=', $startDateParam)
+                    // ->where('absen.check_out', '<=', $endDateParam);
+                    $query->whereBetween('absen.check_in', [$request->startDate, $request->endDate]);
                 }
                 if($request->name){
                     $query->where('user.username','ilike', "%" . $request->name . "%");

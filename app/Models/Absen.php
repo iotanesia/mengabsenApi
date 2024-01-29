@@ -50,7 +50,7 @@ class Absen extends Model
     }
     public function refUser()
     {
-        return $this->belongsTo(User::class,'id','user_id');
+        return $this->belongsTo(User::class,'user_id','id');
     }
     public function refLocation()
     {

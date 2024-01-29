@@ -86,6 +86,7 @@ class ApiHelper {
         $response = [
             "success" => $data ? true : false,
             "message" => null,
+            "responseAttr" => $data['attributes'] ?? null,
             "data" => $data['items'] ?? null
         ];
         return response()->json($response, 200);
