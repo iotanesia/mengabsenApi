@@ -11,4 +11,13 @@ class UserRole extends Model
 
     protected $table = 'auth.user_roles';
     public $timestamps = false;
+    protected $fillable = [
+        'id_user',
+        'code_role',
+    ];
+
+    public function refRole()
+    {
+        return $this->belongsTo(MstRole::class,'code_role','code');
+    }
 }
