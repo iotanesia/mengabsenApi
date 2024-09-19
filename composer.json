@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "dompdf/dompdf": "^3.0",
         "firebase/php-jwt": "^6.1",
         "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -14,11 +15,13 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "laravel/ui": "3.*",
+        "maatwebsite/excel": "^3.1",
+        "mpdf/mpdf": "^8.2",
         "phpseclib/phpseclib": "^3.0",
         "seffeng/laravel-rsa": "^1.0",
         "spatie/laravel-health": "^1.9",
         "stevebauman/location": "^6.3",
-        "maatwebsite/excel": "^3.1"
+        "tecnickcom/tcpdf": "^6.7"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

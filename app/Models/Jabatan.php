@@ -4,16 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MstRole extends Model
+class Jabatan extends Model
 {
-    use HasFactory;
-    protected $table = 'auth.mst_role';
     public $timestamps = false;
+    protected $table = "public.jabatan";
+    use HasFactory;
 
     protected $fillable = [
-        'code',
-        'name',
+        'name'
     ];
 }

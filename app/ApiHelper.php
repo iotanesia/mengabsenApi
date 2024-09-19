@@ -14,6 +14,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 class ApiHelper {
     public const ABSENSI_PATH = "public/images/absensi";
+
+    // public const CUTI_PATH = "public/images/cuti";
+    public const CUTI_PATH = "public/files/cuti";
+
+    public const REIMBURS_PATH = "public/files/reimburs";
+
+    public const TASK_PATH = "public/files/task";
+
+    public const SALARY_PATH = "public/files/salary";
+    
     static function storageCache($key, $callback, $ttl = null )
     {
         if (Cache::has($key)) {

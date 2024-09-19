@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserRole extends Model
+class JenisReimburs extends Model
 {
-    use HasFactory;
+    protected $table = 'jenis_reimburs';
 
-    protected $table = 'auth.user_roles';
-    public $timestamps = false;
+    protected $fillable = [];
+    use HasFactory;
 }

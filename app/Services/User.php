@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Group;
 use App\Models\GlobalParam;
+use App\Models\MstRole;
+use App\Models\UserRole;
 
 class User {
 
@@ -22,6 +24,7 @@ class User {
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
+        $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
         unset($user->ip_whitelist);
         return [
             'items' => $user,
