@@ -73,6 +73,7 @@ Route::prefix('v1')
         Route::get('salary/users', [SalaryController::class, 'users']);
         Route::post('salary', [SalaryController::class, 'create']);
         Route::get('salary/all', [SalaryController::class, 'getAll']);
+        Route::get('salary', [SalaryController::class, 'get']);
     });
     Route::get('history-absen',[AbsensiController::class,'historyAbsen']);
     Route::get('absen/rekap',[AbsensiController::class,'generateRekapAbsen']);

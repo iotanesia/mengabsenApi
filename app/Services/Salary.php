@@ -72,16 +72,36 @@ class Salary {
         return $data;
     }
 
+    public static function get($request){
+        $data = Models::join('public.salary_data', 'salary_data.salary_id', '=', 'salary.id')
+        ->whereMonth('salary.date', $request->month)
+        ->whereYear('salary.date', $request->year)
+        ->where('salary_data.user_id', $request->current_user->id)->get(['salary.date']);
+
+        $data->transform(function($item){
+          
+            $dateArr = explode('-', $item->date);
+            $item->date = $dateArr[2] . '/' . $dateArr[1] . '/' . $dateArr[0];
+            $item->month = Carbon::createFromFormat('m', $dateArr[1])->locale('id')->translatedFormat('F');
+
+            return $item;
+        });
+
+        return $data;
+    }
+
     public static function create($request){
         $file = $request->file('file');
+        $dateArr = explode('/', $request->date);
+        $dateCon = $dateArr[2] . '-' . $dateArr[1] . '-' . $dateArr[0];
 
         $salary = new Models();
-        $salary->date = $request->date;
+        $salary->date = $dateCon;
         $salary->status = true;
         $salary->save();
 
         $user = $request->user_id;
-        $date = explode('-',$request->date);
+        $date = explode('-',$dateCon);
 
         foreach($user as $index => $value){
 

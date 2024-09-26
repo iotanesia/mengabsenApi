@@ -17,6 +17,10 @@ class SalaryController extends Controller
         return Response::responseData(['items' => Salary::getAll($request)]);
     }
 
+    public function get(Request $request){
+        return Response::responseData(['items' => Salary::get($request)]);
+    }
+
     public function create(Request $request){
         return Response::responseData(['items' => Salary::create($request)]);
     }
