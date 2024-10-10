@@ -27,4 +27,48 @@ class AuthControler extends Controller
     public function updateProfile(Request $request) {
         return Response::responseData(['items' => Service::updateProfile($request)]);
     }
+
+    public function create(Request $request){
+        return Response::responseData(['items' => Service::create($request)]);
+    }
+
+    public function getById(Request $request, $id){
+        return Response::responseData(['items' => Service::getById($request, $id)]);
+    }
+
+    public function getAllUser(Request $request){
+        return Response::responseData(['items' => Service::getAllUser($request)]);
+    }
+
+    public function updateById(Request $request, $id){
+        return Response::responseData(['items' => Service::updateById($request, $id)]);
+    }
+
+    public function deleteById(Request $request, $id){
+        return Response::responseData(['items' => Service::deleteById($request, $id)]);
+    }
+
+    public function getAllData(Request $request){
+        return Response::responseData(['items' => Service::getAllData($request)]);
+    }
+
+    public function getAllRole(Request $request){
+        return Response::responseData(['items' => Service::getAllRole($request)]);
+    }
+
+    public function addMstRole(Request $request){
+        return Response::responseData(['items' => Service::addMstRole($request)]);
+    }
+
+    public function updateRole(Request $request){
+        return Response::responseData(['items' => Service::updateRole($request)]);
+    }
+
+    public function deleteRole(Request $request, $id){
+        return Response::responseData(['items' => Service::deleteRole($request, $id)]);
+    }
+
+    public function getRoleById(Request $request, $id){
+        return Response::responseData(['items' => Service::getRoleById($request, $id)]);
+    }
 }

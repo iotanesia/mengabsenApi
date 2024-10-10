@@ -10,6 +10,7 @@ use App\Constants\Group;
 use App\Models\GlobalParam;
 use App\Models\MstRole;
 use App\Models\UserRole;
+use App\Models\Master;
 
 class User {
 
@@ -25,6 +26,14 @@ class User {
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
+        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
+        ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
+        ->orderBy('order', 'asc')
+        ->get()->map(function($items){
+            $items->subMenu = Master::where('parent', $items->id)->get();
+            return $items;
+        });;
+
         unset($user->ip_whitelist);
         return [
             'items' => $user,
@@ -32,21 +41,23 @@ class User {
         ];
     }
 
-    public static function getAllData($params)
-    {
-        $data = Model::where(function ($query) use ($params){
-            if($params->search) $query->where('username','ilike',"%{$params->search}%")
-            ->orWhere('email','ilike',"%{$params->search}%")
-            ->orWhere('ip_whitelist','ilike',"%{$params->search}%");
-        })->paginate($params->limit ?? null);
+    public static function getAllData($request) {   
+        $data = Model::where(function ($query) use ($request) {
+            if($request->search) {
+                $query->where('username','ilike',"%{$request->search}%")
+                    ->orWhere('email','ilike',"%{$request->search}%")
+                    ->orWhere('ip_whitelist','ilike',"%{$request->search}%");
+            }
+        })->paginate($request->limit ?? 10);
+        
         return [
-            'items' => $data->items(),
-            'attributes' => [
-                'total' => $data->total(),
-                'current_page' => $data->currentPage(),
-                'from' => $data->currentPage(),
-                'per_page' => $data->perPage(),
-           ]
+            'data' => $data->items(),
+            'last_page' => $data->lastPage(),
+            'current_page' => $data->currentPage(),
+            'from' => $data->firstItem(),
+            'to' => $data->lastItem(),
+            'total' => $data->total(),
+            'per_page' => $data->perPage(),
         ];
     }
 
@@ -66,7 +77,7 @@ class User {
         ];
     }
 
-public static function saveData($params)
+    public static function saveData($params)
     {
         $data = $params->all();
         $data['password'] = Hash::make($params->password);
@@ -136,6 +147,156 @@ public static function saveData($params)
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
+        }
+    }
+
+    public static function create($request){
+
+        if(Model::where('email', $request->email)->exists()){
+            return [
+                'message' => 'email sudah terdaftar'
+            ];
+        }
+
+        
+        $user = new Model();
+        $user->app_name = "mengabsen";
+
+        $user->username = $request->username;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->nama_lengkap = $request->name;
+
+        if ($user->username == Null || $user->email == Null || $user->password == Null || $user->nama_lengkap == Null) {
+            return [
+                "message" => "harap mengisi semua field."
+            ];
+        } else {
+            $user->save();
+            $role = new UserRole();
+            $role->id_user = $user->id;
+            $role->code_role = $request->code_role;
+            $role->save();
+    
+            return [$user, $role];
+        }
+    }
+
+    public static function getById($request, $id){
+        $search = Model::find($id);
+        $role = UserRole::where('id_user', $id)->first();
+        $detail_role = MstRole::where('code', $role->code_role)->first();
+        if(!$search) {
+            return [
+                'message' => 'id tidak ditemukan'
+            ];
+        } else {
+            return [$search, $role, $detail_role];
+        }
+    }
+
+    public static function getAllUser($request) {
+        return Model::all();
+    }
+
+    public static function updateById($request, $id){
+            $update = Model::find($id);
+            if(!$update) {
+                return [
+                    'message' => 'id tidak ditemukan'
+                ];
+            } 
+
+            $update->username = $request->username;
+            $update->nama_lengkap = $request->nama;
+            $update->password = $request->password;
+            $update->email = $request->email;
+            $update->save();
+
+            $role = UserRole::where('id_user', $id)->first();
+            $role->code_role = $request->code_role;
+            $role->save();
+
+            return [
+                'message' => 'user berhasil diupdate',
+                'user' => $update,
+                'role' => $role
+            ];
+    }
+
+    public static function deleteById($request, $id){
+        $delete = Model::find($id);
+        if (!$delete) {
+            return [
+                'message' => 'id tidak ditemukan'
+            ];
+        } else {
+            $delete->delete();
+            return [
+                'message' => 'user berhasil dihapus',
+                'detail' => $delete,
+            ];
+        }
+    }
+
+    public static function getAllRole($request) {
+        return MstRole::all();
+    
+    }
+
+    public static function addMstRole($request) {
+        $role = new MstRole();
+        $role->code = $request->code;
+        $role->name = $request->name;
+        if ($role->code == Null || $role->name == Null) {
+            return [
+                'message' => 'semua data harus terisi'
+            ];
+        }else {
+            $role->save();
+        }
+        return $role;
+    }
+
+    public static function updateRole($request) {
+        $update = MstRole::find($request->id);
+        $update->code = $request->code;
+        $update->name = $request->name;
+        if ($update->code == Null || $update->name == Null) {
+            return [
+                'message' => 'semua data harus terisi'
+            ];
+        } else {
+            $update->update();
+            return $update;
+        }
+
+    }
+
+    public static function deleteRole($request, $id) {
+        $delete = MstRole::find($id);
+        if(!$delete){
+            return [
+                'message' => 'id tidak ditemukan'
+            ];
+        } else {
+            $delete->delete();
+            return [
+                'message' => 'role berhasil dihapus',
+                'detail' => $delete
+            ];
+        }
+    }
+
+    public static function getRoleById($request, $id) {
+        $search = MstRole::find($id);
+        
+        if(!$search) {
+            return [
+                'message' => 'id tidak ditemukan'
+            ];
+        } else {
+            return $search;
         }
     }
 }
