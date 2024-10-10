@@ -4,6 +4,7 @@ use App\Models\Reimburs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthControler;
+use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\Api\RSAController;
 use App\Http\Controllers\Api\UserControler;
 use App\Http\Controllers\Api\CutiController;
@@ -74,8 +75,30 @@ Route::prefix('v1')
         Route::post('salary', [SalaryController::class, 'create']);
         Route::get('salary/all', [SalaryController::class, 'getAll']);
         Route::get('salary', [SalaryController::class, 'get']);
+
     });
     Route::get('history-absen',[AbsensiController::class,'historyAbsen']);
     Route::get('absen/rekap',[AbsensiController::class,'generateRekapAbsen']);
+
+
+    Route::post('user', [AuthControler::class, 'create']);
+    Route::get('user/all', [AuthControler::class, 'getAllUser']);
+    Route::get('user/{id}', [AuthControler::class, 'getById']);
+    Route::put('user/{id}', [AuthControler::class, 'updateById']);
+    Route::post('user/delete/{id}', [AuthControler::class, 'deleteById']);
+    Route::get('user', [AuthControler::class, 'getAllData']); 
+    
+    Route::get('master/', [MasterController::class, "getMasterSideMenu"]);
+    Route::get('master/menu', [MasterController::class, "getMasterSideMenu"]);	
+    Route::post('master/menu', [MasterController::class, "createMenu"]);	
+    Route::post('master/delete/{id}', [MasterController::class, "deleteMenu"]);
+    Route::post('master/update/{id}', [MasterController::class, "updateMenu"]);
+    Route::post('master/createIzin', [MasterController::class, "createJenisIzin"]);
+    Route::get('master/izin', [MasterController::class, "getJenisIzin"]);
+    Route::get('master/role', [AuthControler::class, "getAllRole"]);
+    Route::post('master/role', [AuthControler::class, "addMstRole"]);
+    Route::get('master/role/{id}', [AuthControler::class, "getRoleById"]);
+    Route::put('master/role', [AuthControler::class, "updateRole"]);
+    Route::delete('master/role/{id}', [AuthControler::class, "deleteRole"]);
 });
 
