@@ -42,14 +42,14 @@ class Task
             ->where('status', $request->status)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date','task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.filename','task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date','task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path','task.created_at']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.filename','task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at']);
         }
 
         return $data->transform(function($item){
@@ -77,7 +77,7 @@ class Task
             ->where('status', $request->status)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail','task.path', 'task.filename', 'task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail','task.path', 'task.created_at']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
@@ -85,7 +85,7 @@ class Task
             ->where('user_id', $request->current_user->id)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.filename', 'task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at']);
         }
 
         return $data->transform(function($item){
