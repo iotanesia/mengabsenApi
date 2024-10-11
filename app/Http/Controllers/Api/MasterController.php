@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\ApiHelper as Response;
 use App\Services\Master as Service;
 
+
 class MasterController extends Controller
 {
     public function getMasterSideMenu(Request $request){
@@ -35,5 +36,9 @@ class MasterController extends Controller
 
     public function getJenisCuti(Request $request){
         return Response::responseData(['items' => Service::getJenisCuti($request)]);
+    }
+
+    public function getPermissionByIdRole(Request $request) {
+        return Response::responseData(['items' => Service::getPermissionByIdRole($request)]);
     }
 }

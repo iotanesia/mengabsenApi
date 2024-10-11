@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Master as Model;
 use App\Models\MstJenisIzin as ModelIzin;
 use App\ApiHelper;
+use App\Models\MstPermission as MstPermission;
 
 class Master {
     public static function getMasterSideMenu($request){
@@ -101,4 +102,15 @@ class Master {
             'items' => $jenis
         ];
     }   
+
+    public static function getPermissionByIdRole($request) {
+        $permission = MstPermission::where('id_role', $request->id_role)->get();
+        if (!$permission) {
+            return [
+                'message' => 'data tidak ditemukan'
+            ];
+        } else {
+            return $permission;
+        }
+    }
 }

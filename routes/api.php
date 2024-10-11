@@ -100,5 +100,6 @@ Route::prefix('v1')
     Route::get('master/role/{id}', [AuthControler::class, "getRoleById"]);
     Route::put('master/role', [AuthControler::class, "updateRole"]);
     Route::delete('master/role/{id}', [AuthControler::class, "deleteRole"]);
+    Route::get('master/permission', [MasterController::class, "getPermissionByIdRole"]);
 });
 
