@@ -19,7 +19,10 @@ class Task extends Model
         'accompanied',
         'detail',
         'path',
-        'filename'
+        'long',
+        'lat',
+        'desc',
+        'visit_date'
     ];
 
     use HasFactory;

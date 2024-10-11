@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Cuti;
 use App\Models\Jabatan;
 use App\Models\UserRole;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use App\Models\Cuti as C;
 use App\Constants\ErrorCode;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Drawing;
 
 class CutiController extends Controller
 {
@@ -80,19 +80,25 @@ class CutiController extends Controller
 
         $worksheet->setCellValue('E4', " ".Carbon::createFromFormat('Y-m-d', $create[0])->format('d/m/Y'));
         $worksheet->setCellValue('B7', "$cuti->NIK");
-        $worksheet->setCellValue('F7', $cuti->nama_lengkap);
-        $worksheet->setCellValue('J7', Jabatan::where("id", $cuti->jabatan)->value('name'));
+        $worksheet->setCellValue('G7', $cuti->nama_lengkap);
+        $worksheet->setCellValue('L7', Jabatan::where("id", $cuti->jabatan)->value('name'));
         $worksheet->setCellValue('E10'," " .Carbon::createFromFormat('Y-m-d', $cuti->from)->format('d/m/Y') .' s/d ' . Carbon::createFromFormat('Y-m-d', $cuti->to)->format('d/m/Y'));
         $worksheet->setCellValue('B19', $cuti->alasan);
         $worksheet->setCellValue('B30', $cuti->nama_lengkap);
-        $worksheet->setCellValue('F30', User::where('id', $cuti->updated_by)->value('nama_lengkap'));
+        $worksheet->setCellValue('G30', User::where('id', $cuti->updated_by)->value('nama_lengkap'));
+
+        $drawing = new Drawing();
+        $drawing->setPath(Storage::path('image/approved.png'));
+        $drawing->setCoordinates('I27');
+        $drawing->setWorksheet($worksheet);
+
         
         if($cuti->jenis_izin == "Cuti"){
             $worksheet->setCellValue('C14', " ✔ ");
         } else if ($cuti->jenis_izin == "Izin"){
-            $worksheet->setCellValue('G14', " ✔ ");
+            $worksheet->setCellValue('H14', " ✔ ");
         } else {
-            $worksheet->setCellValue('K14', " ✔ ");
+            $worksheet->setCellValue('M14', " ✔ ");
         }
 
         

@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\ApiHelper;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Mail\SalaryMail;
 use App\Models\SalaryData;
 use App\Models\Salary as Models;
-use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 class Salary {
 
@@ -126,6 +128,9 @@ class Salary {
             $data->path = $hash;
             $file[$index]->storeAs(ApiHelper::SALARY_PATH, $hash);
             $data->save();
+
+        
+            Mail::to(User::find($user[$index]))->send(new SalaryMail($date, ApiHelper::SALARY_PATH . '/' . $hash, $file[$index]->getClientOriginalName()));
         }
 
         return Models::where('id', $salary->id)->get()->transform(function($item) {
