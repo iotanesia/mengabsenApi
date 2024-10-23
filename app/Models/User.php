@@ -24,6 +24,7 @@ class User extends Authenticatable
         'app_name',
         'email',
         'password',
+        'reset_token'
     ];
 
     /**

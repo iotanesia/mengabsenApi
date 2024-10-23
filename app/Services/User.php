@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Group;
+use App\Models\passwordReset as PasswordReset;
 use App\Models\GlobalParam;
 use App\Models\MstRole;
 use App\Models\UserRole;
 use App\Models\Master;
+use Illuminate\Support\Facades\Password;
 
 class User {
 
@@ -26,7 +28,59 @@ class User {
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
-        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
+
+        unset($user->ip_whitelist);
+        return [
+            'items' => $user,
+            'attributes' => null
+        ];
+    }
+
+    public static function sendmail($request){
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+        if ($validator->fails()) throw new \Exception($validator->errors()->first());
+        $user = Model::where('email', $request->email)->first();
+        if (!$user) throw new \Exception("Email tidak terdaftar");
+        $reset = new PasswordReset();
+        $reset->email = $user->email;
+        $reset->token = Helper::createJwt($user);
+        $reset->save();
+
+    }
+
+    public static function reset_password($request) {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|min:6',
+            'token' => 'required',
+            'confirm_password' => 'required|same:password',
+        ]);
+        if ($validator->fails()) throw new \Exception($validator->errors()->first());
+        $token = PasswordReset::where('token', $request->token)->first();
+        if (!$token) throw new \Exception("Token tidak valid.");
+        $user = Model::where('email', $token->email)->first();
+        $user->password = Hash::make($request->password);
+        if (!$user->save()) throw new \Exception("Gagal mereset password.");
+        $token->delete();
+        return [
+            'message' => 'Password berhasil direset.',
+            'email' => $user->email,
+        ];
+    }
+
+    public static function authenticateCms($request) {
+        $required_params = [];
+        if (!$request->email) $required_params[] = 'email';
+        if (!$request->password) $required_params[] = 'password';
+        if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
+        $user = Model::where('email',$request->email)->first();
+        if(!$user) throw new \Exception("Pengguna belum terdaftar.");
+        if (!Hash::check($request->password, $user->password)) throw new \Exception("Email atau password salah.");
+        $user->access_token = Helper::createJwt($user);
+        $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
+        $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
+        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'home'])
         ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
         ->orderBy('order', 'asc')
         ->get()->map(function($items){
@@ -44,12 +98,17 @@ class User {
     public static function getAllData($request) {   
         $data = Model::where(function ($query) use ($request) {
             if($request->search) {
-                $query->where('username','ilike',"%{$request->search}%")
-                    ->orWhere('email','ilike',"%{$request->search}%")
-                    ->orWhere('ip_whitelist','ilike',"%{$request->search}%");
+                $query->where('users.username','ilike',"%{$request->search}%")
+                    ->orWhere('users.email','ilike',"%{$request->search}%")
+                    ->orWhere('users.ip_whitelist','ilike',"%{$request->search}%");
             }
         })->paginate($request->limit ?? 10);
         
+        $data->transform(function($item) {
+            $item->role = MstRole::where('code', UserRole::where('id_user', $item->id)->value('code_role'))->value('name');
+            return $item;
+        });
+
         return [
             'data' => $data->items(),
             'last_page' => $data->lastPage(),
@@ -209,7 +268,7 @@ class User {
 
             $update->username = $request->username;
             $update->nama_lengkap = $request->nama;
-            $update->password = $request->password;
+            $update->password = Hash::make($request->password);
             $update->email = $request->email;
             $update->save();
 
