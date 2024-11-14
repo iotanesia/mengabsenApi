@@ -42,14 +42,14 @@ class Task
             ->where('status', $request->status)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date','task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path','task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date','task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path','task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' , 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at' , 'task.long', 'task.lat', 'task.desc', 'task.visit_date', 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         }
 
         return $data->transform(function($item){
@@ -77,7 +77,7 @@ class Task
             ->where('status', $request->status)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail','task.path', 'task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail','task.path', 'task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' , 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
@@ -85,7 +85,7 @@ class Task
             ->where('user_id', $request->current_user->id)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
-            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at']);
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' ,'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         }
 
         return $data->transform(function($item){
@@ -107,14 +107,13 @@ class Task
     public static function update($request, $id){
         $data = Models::find($id);
         $data->update($request->all());
-
-
-        $data->status = true;
         
-        $file = $request->file('file');
-        $data->path = $file->hashname();
-        $file->storeAs(ApiHelper::TASK_PATH, $data->path);
-        $data->save();
+        if($request->meeting_end != null){   
+            $file = $request->file('file');
+            $data->path = $file->hashname();
+            $file->storeAs(ApiHelper::TASK_PATH, $data->path);
+            $data->save();
+        }
 
         return true;
     }

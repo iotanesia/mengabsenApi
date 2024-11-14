@@ -26,13 +26,13 @@ class User {
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
-        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
-        ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
-        ->orderBy('order', 'asc')
-        ->get()->map(function($items){
-            $items->subMenu = Master::where('parent', $items->id)->get();
-            return $items;
-        });;
+        // $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
+        // ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
+        // ->orderBy('order', 'asc')
+        // ->get()->map(function($items){
+        //     $items->subMenu = Master::where('parent', $items->id)->get();
+        //     return $items;
+        // });;
 
         unset($user->ip_whitelist);
         return [

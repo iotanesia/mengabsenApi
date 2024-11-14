@@ -9,6 +9,7 @@ use App\Mail\SalaryMail;
 use App\Models\SalaryData;
 use App\Models\Salary as Models;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class Salary {
 
@@ -131,6 +132,7 @@ class Salary {
 
         
             Mail::to(User::find($user[$index]))->send(new SalaryMail($date, ApiHelper::SALARY_PATH . '/' . $hash, $file[$index]->getClientOriginalName()));
+            Storage::delete(ApiHelper::SALARY_PATH . '/' . $hash);
         }
 
         return Models::where('id', $salary->id)->get()->transform(function($item) {

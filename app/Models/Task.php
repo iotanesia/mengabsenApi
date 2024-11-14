@@ -18,11 +18,14 @@ class Task extends Model
         'company_name',
         'accompanied',
         'detail',
+        'status',
         'path',
         'long',
         'lat',
         'desc',
-        'visit_date'
+        'visit_date',
+        'hrd_status',
+        'alasan_tolak'
     ];
 
     use HasFactory;
