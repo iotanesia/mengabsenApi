@@ -35,7 +35,7 @@ class Task
     }
 
     public static function getAll($request){
-        if($request->status != 'all'){
+        if($request->status == 'true'){
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
@@ -43,10 +43,31 @@ class Task
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
             ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date','task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path','task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' , 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
+        } else if($request->status == 'all'){
+            $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
+            ->join('auth.users', 'task.user_id', '=', 'users.id')
+            ->orderBy('task.created_at', 'desc')
+            ->whereMonth('task.created_at', $request->month)
+            ->whereYear('task.created_at', $request->year)
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at' , 'task.long', 'task.lat', 'task.desc', 'task.visit_date', 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
+        } else if($request->status == 'null'){
+            $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
+            ->join('auth.users', 'task.user_id', '=', 'users.id')
+            ->orderBy('task.created_at', 'desc')
+            ->where('status', false)
+            ->whereMonth('task.created_at', $request->month)
+            ->whereYear('task.created_at', $request->year)
+            ->where(function($query) {
+                $query->whereNull('task.hrd_status')
+                      ->orWhere('task.hrd_status', true);
+            })
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at' , 'task.long', 'task.lat', 'task.desc', 'task.visit_date', 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
+            ->where('status', false)
+            ->where('hrd_status', false)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
             ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at' , 'task.long', 'task.lat', 'task.desc', 'task.visit_date', 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
@@ -69,7 +90,7 @@ class Task
     }
 
     public static function get($request){
-        if($request->status != 'all'){
+        if($request->status == 'true'){
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
@@ -78,10 +99,33 @@ class Task
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)
             ->get(['users.nama_lengkap', 'users.NIK','task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail','task.path', 'task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' , 'task.hrd_status', 'task.alasan_tolak', 'task.address']);
+        } else if($request->status == 'all') {
+            $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
+            ->join('auth.users', 'task.user_id', '=', 'users.id')
+            ->orderBy('task.created_at', 'desc')
+            ->where('user_id', $request->current_user->id)
+            ->whereMonth('task.created_at', $request->month)
+            ->whereYear('task.created_at', $request->year)
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' ,'task.hrd_status', 'task.alasan_tolak', 'task.address']);
+        } else if ($request->status == 'null'){
+            $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
+            ->join('auth.users', 'task.user_id', '=', 'users.id')
+            ->orderBy('task.created_at', 'desc')
+            ->where('status', false)
+            ->where('user_id', $request->current_user->id)
+            ->whereMonth('task.created_at', $request->month)
+            ->whereYear('task.created_at', $request->year)
+            ->where(function($query) {
+                $query->whereNull('task.hrd_status')
+                      ->orWhere('task.hrd_status', true);
+            })
+            ->get(['users.nama_lengkap', 'users.NIK', 'task.id', 'tujuan_tugas.name as tujuan', 'task.meeting_date as date', 'task.company_name as company','task.status','task.meeting_start as start', 'task.meeting_end as end', 'task.guest_name as guest','task.accompanied','task.detail', 'task.path', 'task.created_at', 'task.long', 'task.lat', 'task.desc', 'task.visit_date' ,'task.hrd_status', 'task.alasan_tolak', 'task.address']);
         } else {
             $data = Models::join('public.tujuan_tugas', 'tujuan_tugas.id', '=', 'task.tujuan_id')
             ->join('auth.users', 'task.user_id', '=', 'users.id')
             ->orderBy('task.created_at', 'desc')
+            ->where('status', false)
+            ->where('hrd_status', false)
             ->where('user_id', $request->current_user->id)
             ->whereMonth('task.created_at', $request->month)
             ->whereYear('task.created_at', $request->year)

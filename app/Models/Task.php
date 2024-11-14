@@ -25,7 +25,8 @@ class Task extends Model
         'desc',
         'visit_date',
         'hrd_status',
-        'alasan_tolak'
+        'alasan_tolak',
+        'address'
     ];
 
     use HasFactory;
