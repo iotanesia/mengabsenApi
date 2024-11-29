@@ -146,7 +146,6 @@ class Master
                 ->get();
 
 
-
             return $permission->transform(function ($item) {
                 $item->subMenu = Model::where('parent', $item->id_menu)->get(['id', 'name', 'pathname', 'parent', 'icon', 'order']);
 
