@@ -21,14 +21,14 @@ class Master
         //     $items->menu = Model::where('parent', $items->id)->get();
         //     return $items;
         // });
-       return $data = $data->map(function ($items) {
+        return $data = $data->map(function ($items) {
             unset($items->created_at, $items->updated_at, $items->tag_variant, $items->parent, $items->created_by, $items->updated_by, $items->mst_part, $items->deleted_at);
 
             $items->children = Model::where('parent', $items->id)->get(['id', 'name', 'pathname', 'parent', 'order']);
             return $items;
         });
 
-        
+
 
         // return [
         //     'data' => $data,
@@ -45,18 +45,20 @@ class Master
     public static function createMenu($request)
     {
         $create = new Model();
+        $create->id = Model::count() + 1;
         $create->name = $request->name;
         $create->category = $request->category;
         $create->icon = $request->icon;
         $create->parent = $request->parent;
         $create->order = $request->order;
         $create->pathname = $request->url;
-        if ($create->name == Null || $create->parent == Null || $create->order == Null || $create->category == Null || $create->icon == Null || $create->pathname == Null) {
+        if ($create->name == Null || $create->order == Null || $create->pathname == Null) {
             return [
                 'message' => "semua data harus terisi"
             ];
         }
         $create->save();
+        return true;
         return $create;
     }
 
@@ -141,7 +143,6 @@ class Master
         } else {
             $data = MstPermission::where('pathname', '#')
                 ->whereIn('name', ['User Management', 'Master'])
-                ->orderBy('id', 'asc')
                 ->get();
 
 
@@ -181,35 +182,41 @@ class Master
     {
         $validator = validator::make($request->all(), [
             'code_role' => 'required',
-            'id_menu' => 'required',
         ]);
+
+
         if ($validator->fails()) {
             return [
                 'message' => 'semua data harus terisi'
             ];
-        } else {
+        }
+
+        if(MstPermission::where('code_role', $request->code_role)->count() > 0) {
+            MstPermission::where('code_role', $request->code_role)->delete();
+        }
+
+        if($request->id_menu != null){
             foreach ($request->id_menu as $value) {
                 if (MstPermission::where('code_role', $request->code_role)->where('id_menu', $value)->count() == 0) {
                     $data = Model::where('id', $value)->first(['name', 'pathname', 'parent']);
                     if ($data->pathname != "#") {
-                        $permission = new MstPermission();
-                        $mstMenu = $data;
-                        $permission->code_role = $request->code_role;
-                        $permission->id_menu = (int) $value;
-                        $permission->name = $mstMenu->name;
-                        $permission->pathname = $mstMenu->pathname;
-                        $permission->parent = $mstMenu->parent;
-                        $permission->save();
-                    }
+                    $permission = new MstPermission();
+                    $mstMenu = $data;
+                    $permission->code_role = $request->code_role;
+                    $permission->id_menu = (int) $value;
+                    $permission->name = $mstMenu->name;
+                    $permission->pathname = $mstMenu->pathname;
+                    $permission->parent = $mstMenu->parent;
+                    $permission->save();
                 }
             }
-
-            return [
-                'message' => 'berhasil menambahkan permission',
-                'status' => true,
-                'items' => $permission != null ? $permission : '',
-            ];
         }
+    }
+
+        return [
+            'message' => 'berhasil menambahkan permission',
+            'status' => true
+        ];
     }
 
     public static function deleteUserContainer($request, $id)
