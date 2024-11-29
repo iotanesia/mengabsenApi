@@ -183,7 +183,6 @@ class Master
             'code_role' => 'required',
         ]);
 
-
         if ($validator->fails()) {
             return [
                 'message' => 'semua data harus terisi'
