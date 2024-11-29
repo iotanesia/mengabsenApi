@@ -7,10 +7,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Group;
+use App\Models\passwordReset as PasswordReset;
 use App\Models\GlobalParam;
 use App\Models\MstRole;
 use App\Models\UserRole;
 use App\Models\Master;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetMail;
 
 class User {
 
@@ -26,13 +29,13 @@ class User {
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
-        // $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
-        // ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
-        // ->orderBy('order', 'asc')
-        // ->get()->map(function($items){
-        //     $items->subMenu = Master::where('parent', $items->id)->get();
-        //     return $items;
-        // });;
+         $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
+         ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
+         ->orderBy('order', 'asc')
+         ->get()->map(function($items){
+             $items->subMenu = Master::where('parent', $items->id)->get();
+             return $items;
+         });;
 
         unset($user->ip_whitelist);
         return [
@@ -41,15 +44,182 @@ class User {
         ];
     }
 
-    public static function getAllData($request) {   
-        $data = Model::where(function ($query) use ($request) {
-            if($request->search) {
-                $query->where('username','ilike',"%{$request->search}%")
-                    ->orWhere('email','ilike',"%{$request->search}%")
-                    ->orWhere('ip_whitelist','ilike',"%{$request->search}%");
-            }
-        })->paginate($request->limit ?? 10);
-        
+    public static function sendmail($request){
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+        if ($validator->fails()) throw new \Exception($validator->errors()->first());
+        $user = Model::where('email', $request->email)->first();
+        if (!$user) throw new \Exception("Email tidak terdaftar");
+        if ($user->email)
+        $reset = new PasswordReset();
+        $reset->email = $user->email;
+        $reset->token = Helper::createJwt($user);
+        $url = "http://localhost:5173/create-new-password?token=" . $reset->token;
+        $reset->save();
+        Mail::to($user->email)->send(new ResetMail($url));
+        return [
+            'msg' => 'Email berhasil dikirim',
+            'email' => $user->email
+        ];
+    }
+
+    public static function reset_password($request) {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|min:6',
+            'token' => 'required',
+            'confirmPassword' => 'required|same:password',
+        ]);
+        if ($validator->fails()) throw new \Exception($validator->errors()->first());
+        $token = PasswordReset::where('token', $request->token)->first();
+        if (!$token) throw new \Exception("Token tidak valid.");
+        $user = Model::where('email', $token->email)->first();
+        $user->password = Hash::make($request->password);
+        if (!$user->save()) throw new \Exception("Gagal mereset password.");
+        $token->delete();
+        return [
+            'message' => 'Password berhasil direset.',
+            'email' => $user->email,
+        ];
+    }
+    // public static function sendmail($request){
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required|email',
+    //     ]);
+    //     if ($validator->fails()) throw new \Exception($validator->errors()->first());
+    //     $user = Model::where('email', $request->email)->first();
+    //     if (!$user) throw new \Exception("Email tidak terdaftar");
+    //     $reset = new PasswordReset();
+    //     $reset->email = $user->email;
+    //     $reset->token = Helper::createJwt($user);
+    //     $reset->save();
+
+    // }
+
+    // public static function reset_password($request) {
+    //     $validator = Validator::make($request->all(), [
+    //         'password' => 'required|min:6',
+    //         'token' => 'required',
+    //         'confirm_password' => 'required|same:password',
+    //     ]);
+    //     if ($validator->fails()) throw new \Exception($validator->errors()->first());
+    //     $token = PasswordReset::where('token', $request->token)->first();
+    //     if (!$token) throw new \Exception("Token tidak valid.");
+    //     $user = Model::where('email', $token->email)->first();
+    //     $user->password = Hash::make($request->password);
+    //     if (!$user->save()) throw new \Exception("Gagal mereset password.");
+    //     $token->delete();
+    //     return [
+    //         'message' => 'Password berhasil direset.',
+    //         'email' => $user->email,
+    //     ];
+    // }
+
+    public static function authenticateCms($request) {
+        $required_params = [];
+        if (!$request->email) $required_params[] = 'email';
+        if (!$request->password) $required_params[] = 'password';
+        if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
+        $user = Model::where('email',$request->email)->first();
+        if(!$user) throw new \Exception("Pengguna belum terdaftar.");
+        if (!Hash::check($request->password, $user->password)) throw new \Exception("Email atau password salah.");
+        $user->access_token = Helper::createJwt($user);
+        $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
+        $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
+        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'home'])
+        ->whereIn('name', ['Dashboard', 'User Management', 'Master'])
+        ->orderBy('order', 'asc')
+        ->get()->map(function($items){
+            $items->subMenu = Master::where('parent', $items->id)->get();
+            return $items;
+        });
+
+        unset($user->ip_whitelist);
+        return [
+            'items' => $user,
+            'attributes' => null
+        ];
+    }
+
+    // public static function getAllData($request) {
+    //     $data = Model::where(function ($query) use ($request) {
+    //         if($request->search) {
+    //             $query->where('users.username', 'ilike', "%{$request->search}%")
+    //                   ->orWhere('users.email', 'ilike', "%{$request->search}%")
+    //                   ->orWhere('users.ip_whitelist', 'ilike', "%{$request->search}%")
+    //                   ->orWhere('users.nama_lengkap', 'ilike', "%{$request->search}%");
+    //         }
+    //     });
+
+    //     if ($request->sortBy && $request->sortDirection) {
+    //         $data->orderBy($request->sortBy, $request->sortDirection);
+    //     }
+
+    //     $data = $data->paginate($request->limit ?? 10);
+
+    //     $data->transform(function($item) {
+    //         $role = MstRole::where('code', UserRole::where('id_user', $item->id)->value('code_role'))->value('name');
+    //         $item->role = ($role == null ? 'STAFF' : $role);
+    //         return $item;
+    //     });
+
+    //     return [
+    //         'data' => $data->items(),
+    //         'last_page' => $data->lastPage(),
+    //         'current_page' => $data->currentPage(),
+    //         'from' => $data->firstItem(),
+    //         'to' => $data->lastItem(),
+    //         'total' => $data->total(),
+    //         'per_page' => $data->perPage(),
+    //     ];
+    // }
+
+    // public static function getAllData($request) {
+    //     $data = Model::where(function ($query) use ($request) {
+    //         if($request->search) {
+    //             $query->where('users.username','ilike',"%{$request->search}%")
+    //                 ->orWhere('users.email','ilike',"%{$request->search}%")
+    //                 ->orWhere('users.ip_whitelist','ilike',"%{$request->search}%")
+    //                 ->orWhere('users.nama_lengkap','ilike',"%{$request->search}%");
+    //         }
+    //     })->paginate($request->limit ?? 10);
+
+    //     $data->transform(function($item) {
+    //         $item->role = MstRole::where('code', UserRole::where('id_user', $item->id)->value('code_role'))->value('name');
+    //         return $item;
+    //     });
+
+    //     return [
+    //         'data' => $data->items(),
+    //         'last_page' => $data->lastPage(),
+    //         'current_page' => $data->currentPage(),
+    //         'from' => $data->firstItem(),
+    //         'to' => $data->lastItem(),
+    //         'total' => $data->total(),
+    //         'per_page' => $data->perPage(),
+    //     ];
+    // }
+
+    public static function getAllData($request) {
+        $data = Model::leftJoin('user_roles', DB::raw('CAST(users.id AS VARCHAR)'), '=', 'user_roles.id_user')
+            ->leftJoin('mst_role', 'user_roles.code_role', '=', DB::raw('CAST(mst_role.code AS VARCHAR)'))
+            ->where(function ($query) use ($request) {
+                if ($request->search) {
+                    $query->where('users.username', 'ilike', "%{$request->search}%")
+                        ->orWhere('users.email', 'ilike', "%{$request->search}%")
+                        ->orWhere('users.ip_whitelist', 'ilike', "%{$request->search}%")
+                        ->orWhere('users.nama_lengkap', 'ilike', "%{$request->search}%")
+                        ->orWhere('mst_role.name', 'ilike', "%{$request->search}%");
+                }
+            })
+            ->select('users.*', DB::raw('COALESCE(mst_role.name, \'STAFF\') as role')); // Default role jadi 'STAFF'
+
+        if ($request->sortBy && $request->sortDirection) {
+            $data->orderBy($request->sortBy, $request->sortDirection);
+        }
+
+        $data = $data->paginate($request->limit ?? 10);
+
         return [
             'data' => $data->items(),
             'last_page' => $data->lastPage(),
@@ -158,7 +328,7 @@ class User {
             ];
         }
 
-        
+
         $user = new Model();
         $user->app_name = "mengabsen";
 
@@ -177,7 +347,7 @@ class User {
             $role->id_user = $user->id;
             $role->code_role = $request->code_role;
             $role->save();
-    
+
             return [$user, $role];
         }
     }
@@ -205,17 +375,19 @@ class User {
                 return [
                     'message' => 'id tidak ditemukan'
                 ];
-            } 
+            }
 
             $update->username = $request->username;
             $update->nama_lengkap = $request->nama;
-            $update->password = $request->password;
+            $update->password = Hash::make($request->password);
             $update->email = $request->email;
             $update->save();
 
             $role = UserRole::where('id_user', $id)->first();
-            $role->code_role = $request->code_role;
-            $role->save();
+            if ($request->has('code_role') && $request->code_role !== null) {
+                $role->code_role = $request->code_role;
+                $role->save();
+            }
 
             return [
                 'message' => 'user berhasil diupdate',
@@ -241,7 +413,7 @@ class User {
 
     public static function getAllRole($request) {
         return MstRole::all();
-    
+
     }
 
     public static function addMstRole($request) {
@@ -290,7 +462,7 @@ class User {
 
     public static function getRoleById($request, $id) {
         $search = MstRole::find($id);
-        
+
         if(!$search) {
             return [
                 'message' => 'id tidak ditemukan'

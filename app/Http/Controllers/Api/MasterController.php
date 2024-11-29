@@ -41,4 +41,13 @@ class MasterController extends Controller
     public function getPermissionByIdRole(Request $request) {
         return Response::responseData(['items' => Service::getPermissionByIdRole($request)]);
     }
+
+    public function addPermissionByIdRole(Request $request) {
+        return Response::responseData(['items' => Service::addPermissionByIdRole($request)]);
+    }
+
+    public function deleteUserContainer(Request $request, $id) {
+        return Response::responseData(['items' => Service::deleteUserContainer($request, $id)]);
+    }
 }
+ 

@@ -28,6 +28,7 @@ Route::prefix('v1')
     });
     
     Route::post('login',[AuthControler::class,'login']);
+    Route::post('logincms',[AuthControler::class,'loginCms']);
     Route::post('regis',[AuthControler::class,'regis']);
     Route::get('version',[AuthControler::class,'version']);
     
@@ -101,5 +102,9 @@ Route::prefix('v1')
     Route::put('master/role', [AuthControler::class, "updateRole"]);
     Route::delete('master/role/{id}', [AuthControler::class, "deleteRole"]);
     Route::get('master/permission', [MasterController::class, "getPermissionByIdRole"]);
+    Route::post('master/permission', [MasterController::class, "addPermissionByIdRole"]);
+    Route::post('sendmail',[AuthControler::class,'sendmail']);
+    Route::post('resetpasswordcms',[AuthControler::class,'reset_password']);
+    Route::delete('master/container/{id}', [MasterController::class, "deleteUserContainer"]);
 });
 

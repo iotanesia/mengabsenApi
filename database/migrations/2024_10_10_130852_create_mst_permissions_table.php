@@ -17,8 +17,9 @@ class CreateMstPermissionsTable extends Migration
             $table->id();
             $table->integer('id_menu');
             $table->integer('id_role');
-            $table->string('name');
-            $table->string('children')->nullable();
+            $table->string('name')->nullable();
+            $table->string('pathname')->nullable();
+            $table->string('parent')->nullable();
             $table->timestamps();
         });
     }

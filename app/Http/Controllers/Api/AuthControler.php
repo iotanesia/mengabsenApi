@@ -15,6 +15,20 @@ class AuthControler extends Controller
     {
         return Response::responseData(Service::authenticateuser($request));
     }
+
+    public function sendmail(Request $request) {
+        return Response::responseData(Service::sendmail($request));
+    }
+
+    public function reset_password(Request $request) {
+        return Response::responseData(Service::reset_password($request));
+    }
+
+    public function loginCms(Request $request)
+    {
+        return Response::responseData(Service::authenticateCms($request));
+    }
+
     public function regis(Request $request) {
         return Response::responseData(['items' => Service::saveData($request)]);
     }
