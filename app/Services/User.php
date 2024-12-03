@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Constants\Group;
-use App\Models\passwordReset as PasswordReset;
+use App\Models\PasswordReset as PasswordReset;
 use App\Models\GlobalParam;
 use App\Models\MstRole;
 use App\Models\UserRole;
@@ -82,38 +82,6 @@ class User {
             'email' => $user->email,
         ];
     }
-    // public static function sendmail($request){
-    //     $validator = Validator::make($request->all(), [
-    //         'email' => 'required|email',
-    //     ]);
-    //     if ($validator->fails()) throw new \Exception($validator->errors()->first());
-    //     $user = Model::where('email', $request->email)->first();
-    //     if (!$user) throw new \Exception("Email tidak terdaftar");
-    //     $reset = new PasswordReset();
-    //     $reset->email = $user->email;
-    //     $reset->token = Helper::createJwt($user);
-    //     $reset->save();
-
-    // }
-
-    // public static function reset_password($request) {
-    //     $validator = Validator::make($request->all(), [
-    //         'password' => 'required|min:6',
-    //         'token' => 'required',
-    //         'confirm_password' => 'required|same:password',
-    //     ]);
-    //     if ($validator->fails()) throw new \Exception($validator->errors()->first());
-    //     $token = PasswordReset::where('token', $request->token)->first();
-    //     if (!$token) throw new \Exception("Token tidak valid.");
-    //     $user = Model::where('email', $token->email)->first();
-    //     $user->password = Hash::make($request->password);
-    //     if (!$user->save()) throw new \Exception("Gagal mereset password.");
-    //     $token->delete();
-    //     return [
-    //         'message' => 'Password berhasil direset.',
-    //         'email' => $user->email,
-    //     ];
-    // }
 
     public static function authenticateCms($request) {
         $required_params = [];
@@ -140,65 +108,6 @@ class User {
             'attributes' => null
         ];
     }
-
-    // public static function getAllData($request) {
-    //     $data = Model::where(function ($query) use ($request) {
-    //         if($request->search) {
-    //             $query->where('users.username', 'ilike', "%{$request->search}%")
-    //                   ->orWhere('users.email', 'ilike', "%{$request->search}%")
-    //                   ->orWhere('users.ip_whitelist', 'ilike', "%{$request->search}%")
-    //                   ->orWhere('users.nama_lengkap', 'ilike', "%{$request->search}%");
-    //         }
-    //     });
-
-    //     if ($request->sortBy && $request->sortDirection) {
-    //         $data->orderBy($request->sortBy, $request->sortDirection);
-    //     }
-
-    //     $data = $data->paginate($request->limit ?? 10);
-
-    //     $data->transform(function($item) {
-    //         $role = MstRole::where('code', UserRole::where('id_user', $item->id)->value('code_role'))->value('name');
-    //         $item->role = ($role == null ? 'STAFF' : $role);
-    //         return $item;
-    //     });
-
-    //     return [
-    //         'data' => $data->items(),
-    //         'last_page' => $data->lastPage(),
-    //         'current_page' => $data->currentPage(),
-    //         'from' => $data->firstItem(),
-    //         'to' => $data->lastItem(),
-    //         'total' => $data->total(),
-    //         'per_page' => $data->perPage(),
-    //     ];
-    // }
-
-    // public static function getAllData($request) {
-    //     $data = Model::where(function ($query) use ($request) {
-    //         if($request->search) {
-    //             $query->where('users.username','ilike',"%{$request->search}%")
-    //                 ->orWhere('users.email','ilike',"%{$request->search}%")
-    //                 ->orWhere('users.ip_whitelist','ilike',"%{$request->search}%")
-    //                 ->orWhere('users.nama_lengkap','ilike',"%{$request->search}%");
-    //         }
-    //     })->paginate($request->limit ?? 10);
-
-    //     $data->transform(function($item) {
-    //         $item->role = MstRole::where('code', UserRole::where('id_user', $item->id)->value('code_role'))->value('name');
-    //         return $item;
-    //     });
-
-    //     return [
-    //         'data' => $data->items(),
-    //         'last_page' => $data->lastPage(),
-    //         'current_page' => $data->currentPage(),
-    //         'from' => $data->firstItem(),
-    //         'to' => $data->lastItem(),
-    //         'total' => $data->total(),
-    //         'per_page' => $data->perPage(),
-    //     ];
-    // }
 
     public static function getAllData($request) {
         $data = Model::leftJoin('user_roles', DB::raw('CAST(users.id AS VARCHAR)'), '=', 'user_roles.id_user')
