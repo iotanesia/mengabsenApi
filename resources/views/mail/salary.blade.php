@@ -69,7 +69,7 @@
     <div class="container">
         <!-- Header Section -->
         <div class="header">
-            <img src="https://pkl.smkprestasiprima.sch.id/storage/absensis/header-2.png">
+            <img src="{{request()->getSchemeAndHttpHost()}}/storage/files/logo/header.png">
         </div>
 
         <!-- Content Section -->
@@ -110,7 +110,7 @@
         <br><br>
         <p>PT Iota Cipta Indonesia</p>
         <div class="footer">
-            <img src="https://pkl.smkprestasiprima.sch.id/storage/absensis/footer-4.png" alt="Footer"><br>
+            <img src="{{request()->getSchemeAndHttpHost()}}/storage/files/logo/footer.png" alt="Footer"><br>
         </div>
     </div>
 </body>

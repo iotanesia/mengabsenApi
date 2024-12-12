@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\User as Model;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,8 @@ use App\Models\Master;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetMail;
 
-class User {
+class User
+{
 
     public static function authenticateuser($params)
     {
@@ -23,19 +25,19 @@ class User {
         if (!$params->email) $required_params[] = 'email';
         if (!$params->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
-        $user = Model::where('email',$params->email)->first();
-        if(!$user) throw new \Exception("Pengguna belum terdaftar.");
+        $user = Model::where('email', $params->email)->first();
+        if (!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
-         $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
-         ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
-         ->orderBy('order', 'asc')
-         ->get()->map(function($items){
-             $items->subMenu = Master::where('parent', $items->id)->get();
-             return $items;
-         });;
+        $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'layers'])
+            ->whereIn('name',    ['Dashboard', 'User Management', 'Master'])
+            ->orderBy('order', 'asc')
+            ->get()->map(function ($items) {
+                $items->subMenu = Master::where('parent', $items->id)->get();
+                return $items;
+            });;
 
         unset($user->ip_whitelist);
         return [
@@ -44,7 +46,8 @@ class User {
         ];
     }
 
-    public static function sendmail($request){
+    public static function sendmail($request)
+    {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
         ]);
@@ -52,7 +55,7 @@ class User {
         $user = Model::where('email', $request->email)->first();
         if (!$user) throw new \Exception("Email tidak terdaftar");
         if ($user->email)
-        $reset = new PasswordReset();
+            $reset = new PasswordReset();
         $reset->email = $user->email;
         $reset->token = Helper::createJwt($user);
         $url = "http://localhost:5173/create-new-password?token=" . $reset->token;
@@ -64,7 +67,8 @@ class User {
         ];
     }
 
-    public static function reset_password($request) {
+    public static function reset_password($request)
+    {
         $validator = Validator::make($request->all(), [
             'password' => 'required|min:6',
             'token' => 'required',
@@ -83,24 +87,25 @@ class User {
         ];
     }
 
-    public static function authenticateCms($request) {
+    public static function authenticateCms($request)
+    {
         $required_params = [];
         if (!$request->email) $required_params[] = 'email';
         if (!$request->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
-        $user = Model::where('email',$request->email)->first();
-        if(!$user) throw new \Exception("Pengguna belum terdaftar.");
+        $user = Model::where('email', $request->email)->first();
+        if (!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($request->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->role = (UserRole::where('id_user', $user->id)->count() <= 0 ? 'Staff' : MstRole::where('code', UserRole::where('id_user', $user->id)->value('code_role'))->value('name'));
         $user->menu = Master::whereIn('icon', ['folder-cog', 'user-cog', 'home'])
-        ->whereIn('name', ['Dashboard', 'User Management', 'Master'])
-        ->orderBy('order', 'asc')
-        ->get()->map(function($items){
-            $items->subMenu = Master::where('parent', $items->id)->get();
-            return $items;
-        });
+            ->whereIn('name', ['Dashboard', 'User Management', 'Master'])
+            ->orderBy('order', 'asc')
+            ->get()->map(function ($items) {
+                $items->subMenu = Master::where('parent', $items->id)->get();
+                return $items;
+            });
 
         unset($user->ip_whitelist);
         return [
@@ -109,7 +114,8 @@ class User {
         ];
     }
 
-    public static function getAllData($request) {
+    public static function getAllData($request)
+    {
         $data = Model::leftJoin('user_roles', DB::raw('CAST(users.id AS VARCHAR)'), '=', 'user_roles.id_user')
             ->leftJoin('mst_role', 'user_roles.code_role', '=', DB::raw('CAST(mst_role.code AS VARCHAR)'))
             ->where(function ($query) use ($request) {
@@ -143,7 +149,7 @@ class User {
     public static function admin($id)
     {
         return [
-            'items' => Model::where('group_id',Group::ADMIN)->find($id),
+            'items' => Model::where('group_id', Group::ADMIN)->find($id),
             'attributes' => null
         ];
     }
@@ -171,12 +177,12 @@ class User {
         }
     }
 
-    public static function updateData($params,$id)
+    public static function updateData($params, $id)
     {
         DB::beginTransaction();
         try {
             $update = Model::find($id);
-            if(!$update) throw new \Exception("id tidak ditemukan.");
+            if (!$update) throw new \Exception("id tidak ditemukan.");
             $update->username = $params->username;
             $update->app_name = $params->app_name;
             $update->email = $params->email;
@@ -210,13 +216,16 @@ class User {
         }
     }
 
-    public static function version() {
-        return GlobalParam::where('param_type','Version')->get();
+    public static function version()
+    {
+        return GlobalParam::where('param_type', 'Version')->get();
     }
-    public static function profile($params) {
+    public static function profile($params)
+    {
         return Model::find($params->current_user->id);
     }
-    public static function updateProfile($params) {
+    public static function updateProfile($params)
+    {
         DB::beginTransaction();
         try {
             $user = Model::find($params->current_user->id);
@@ -229,9 +238,10 @@ class User {
         }
     }
 
-    public static function create($request){
+    public static function create($request)
+    {
 
-        if(Model::where('email', $request->email)->exists()){
+        if (Model::where('email', $request->email)->exists()) {
             return [
                 'message' => 'email sudah terdaftar'
             ];
@@ -261,11 +271,23 @@ class User {
         }
     }
 
-    public static function getById($request, $id){
+    public static function getById($request, $id)
+    {
         $search = Model::find($id);
-        $role = UserRole::where('id_user', $id)->first();
-        $detail_role = MstRole::where('code', $role->code_role)->first();
-        if(!$search) {
+
+        if (UserRole::where('id_user', $id)->count() < 1) {
+            $role = new UserRole();
+            $role->code_role = '02';
+            $role->id_user = $id;
+            $role->save();
+
+            $detail_role = MstRole::where('name', "STAFF")->first();
+        } else {
+            $role = UserRole::where('id_user', $id)->first();
+            $detail_role = MstRole::where('code', $role->code_role)->first();
+        }
+
+        if (!$search) {
             return [
                 'message' => 'id tidak ditemukan'
             ];
@@ -274,38 +296,42 @@ class User {
         }
     }
 
-    public static function getAllUser($request) {
+    public static function getAllUser($request)
+    {
         return Model::all();
     }
 
-    public static function updateById($request, $id){
-            $update = Model::find($id);
-            if(!$update) {
-                return [
-                    'message' => 'id tidak ditemukan'
-                ];
-            }
-
-            $update->username = $request->username;
-            $update->nama_lengkap = $request->nama;
-            $update->password = Hash::make($request->password);
-            $update->email = $request->email;
-            $update->save();
-
-            $role = UserRole::where('id_user', $id)->first();
-            if ($request->has('code_role') && $request->code_role !== null) {
-                $role->code_role = $request->code_role;
-                $role->save();
-            }
-
+    public static function updateById($request, $id)
+    {
+        $update = Model::find($id);
+        if (!$update) {
             return [
-                'message' => 'user berhasil diupdate',
-                'user' => $update,
-                'role' => $role
+                'message' => 'id tidak ditemukan'
             ];
+        }
+
+        $update->username = $request->username;
+
+        $update->nama_lengkap = $request->name;
+        ($request->password ? $update->password = Hash::make($request->password) : '');
+        $update->email = $request->email;
+        $update->save();
+
+        $role = UserRole::where('id_user', $id)->first();
+        if ($request->has('code_role') && $request->code_role !== null) {
+            $role->code_role = $request->code_role;
+            $role->save();
+        }
+
+        return [
+            'message' => 'user berhasil diupdate',
+            'user' => $update,
+            'role' => $role
+        ];
     }
 
-    public static function deleteById($request, $id){
+    public static function deleteById($request, $id)
+    {
         $delete = Model::find($id);
         if (!$delete) {
             return [
@@ -320,12 +346,13 @@ class User {
         }
     }
 
-    public static function getAllRole($request) {
+    public static function getAllRole($request)
+    {
         return MstRole::all();
-
     }
 
-    public static function addMstRole($request) {
+    public static function addMstRole($request)
+    {
         $role = new MstRole();
         $role->code = $request->code;
         $role->name = $request->name;
@@ -333,13 +360,14 @@ class User {
             return [
                 'message' => 'semua data harus terisi'
             ];
-        }else {
+        } else {
             $role->save();
         }
         return $role;
     }
 
-    public static function updateRole($request) {
+    public static function updateRole($request)
+    {
         $update = MstRole::find($request->id);
         $update->code = $request->code;
         $update->name = $request->name;
@@ -351,12 +379,12 @@ class User {
             $update->update();
             return $update;
         }
-
     }
 
-    public static function deleteRole($request, $id) {
+    public static function deleteRole($request, $id)
+    {
         $delete = MstRole::find($id);
-        if(!$delete){
+        if (!$delete) {
             return [
                 'message' => 'id tidak ditemukan'
             ];
@@ -369,10 +397,11 @@ class User {
         }
     }
 
-    public static function getRoleById($request, $id) {
+    public static function getRoleById($request, $id)
+    {
         $search = MstRole::find($id);
 
-        if(!$search) {
+        if (!$search) {
             return [
                 'message' => 'id tidak ditemukan'
             ];
